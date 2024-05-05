@@ -25,21 +25,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const textOut = document.getElementById('text-output');
   const fileIn = document.getElementById('file-input');
   const chooseFile = document.getElementById('file-button');
+  const splitIn = document.getElementById('period-split');
   const nameIn = document.getElementById('name-input');
   const teamIn = document.getElementById('team-input');
 
   const wordRegex = /\s*(\S{1,127})\s*/g;
 
   const rebuild = () => {
-    const pasta = text.value;
+    const pasta = splitIn.checked ? text.value.split('.') : [text.value];
     const lines = [];
-    let match = wordRegex.exec(pasta);
-    while (match != null) {
-      if (lines.length === 0 || lines[lines.length-1].length + match[1].length + 1 > 127)
-        lines.push(match[1]);
-      else lines[lines.length-1] += ' ' + match[1];
-      match = wordRegex.exec(pasta);
-    }
+
+    pasta.forEach(element => {
+      element = splitIn.checked && element.length ? element.trim() + '.' : element;
+      let match = wordRegex.exec(element);
+      let first = true;
+      while (match != null) {
+        if (lines.length === 0 || lines[lines.length-1].length + match[1].length + 1 > 127 || first) {
+          lines.push(match[1]);
+          first = false;
+        }
+        else lines[lines.length-1] += ' ' + match[1];
+        match = wordRegex.exec(element);
+      }
+    });
+    
 
     const name = nameIn.value;
     const commands = [];
@@ -56,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   text.addEventListener('input', rebuild);
+  splitIn.addEventListener('input', rebuild);
   nameIn.addEventListener('input', rebuild);
   teamIn.addEventListener('input', rebuild);
 
